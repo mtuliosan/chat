@@ -150,6 +150,7 @@ export default {
     TeamActions,
     CustomSnoozeModal,
   },
+  mixins: [alertMixin],
   props: {
     conversations: {
       type: Array,
