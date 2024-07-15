@@ -83,6 +83,23 @@ export default {
       visibility: {
         required,
       },
+      actions: {
+        required,
+        $each: {
+          action_params: {
+            required: requiredIf(prop => {
+              if (prop.action_name === 'send_email_to_team') return true;
+              return !(
+                prop.action_name === 'mute_conversation' ||
+                prop.action_name === 'snooze_conversation' ||
+                prop.action_name === 'resolve_conversation' ||
+                prop.action_name === 'reopen_conversation' ||
+                prop.action_name === 'remove_assigned_team'
+              );
+            }),
+          },
+        },
+      },
     },
   },
   methods: {
