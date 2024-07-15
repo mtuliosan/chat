@@ -123,15 +123,6 @@
         @choose-time="chooseSnoozeTime"
       />
     </woot-modal>
-    <woot-modal
-      :show.sync="showCustomSnoozeModal"
-      :on-close="hideCustomSnoozeModal"
-    >
-      <custom-snooze-modal
-        @close="hideCustomSnoozeModal"
-        @choose-time="chooseSnoozeTime"
-      />
-    </woot-modal>
   </div>
 </template>
 
@@ -186,7 +177,6 @@ export default {
     ConversationBulkActions,
     IntersectionObserver,
     VirtualList,
-    CustomSnoozeModal,
     CustomSnoozeModal,
   },
   mixins: [
@@ -265,7 +255,6 @@ export default {
         root: this.$refs.conversationList,
         rootMargin: '100px 0px 100px 0px',
       },
-      showCustomSnoozeModal: false,
       showCustomSnoozeModal: false,
 
       itemComponent: ConversationItem,
