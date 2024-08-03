@@ -18,12 +18,23 @@ class Whatsapp::OneoffSmsCampaignService
   delegate :channel, to: :inbox
 
   def process_audience(audience_labels)
+    # Divide a mensagem da campanha em partes usando '===' como delimitador
+    messages = campaign.message.split('===')
+    # Filtra mensagens não vazias ou em branco
+    valid_messages = messages.reject(&:strip.empty?)
+
+    # Verifica se há mensagens válidas disponíveis
+    if valid_messages.empty?
+      log_info('No valid messages to send.')
+      return
+    end
     campaign.account.contacts.tagged_with(audience_labels, any: true).each do |contact|
       if contact.phone_number.blank?
         log_info("Skipping contact #{contact.id} due to missing phone number")
         next
       end
-      send_message(inbox.name, to: contact.phone_number, content: campaign.message)
+
+      send_message(inbox.name, to: contact.phone_number, content: valid_messages.samplee)
       delay = rand(1..campaign.sleep_interval)
       sleep delay
     end
