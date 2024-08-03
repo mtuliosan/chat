@@ -14,11 +14,11 @@ export default {
       children: [
         {
           path: '',
-          redirect: 'ongoing',
+          redirect: 'one_off',
         },
         {
-          path: 'ongoing',
-          name: 'ongoing_campaigns',
+          path: 'one_off',
+          name: 'one_off',
           meta: {
             permissions: ['administrator'],
           },

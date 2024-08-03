@@ -9,16 +9,15 @@
     </h2>
     <p
       v-if="headerContent"
+      v-dompurify-html="headerContent"
       ref="modalHeaderContent"
       class="w-full mt-2 text-sm leading-5 break-words text-slate-600 dark:text-slate-300"
     >
-      {{ headerContent }}
       <span
         v-if="headerContentValue"
+        v-dompurify-html="headerContentValue"
         class="text-sm font-semibold text-slate-600 dark:text-slate-300"
-      >
-        {{ headerContentValue }}
-      </span>
+      />
     </p>
     <slot />
   </div>

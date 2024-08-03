@@ -10,6 +10,7 @@
 #  enabled                            :boolean          default(TRUE)
 #  message                            :text             not null
 #  scheduled_at                       :datetime
+#  sleep_interval                     :integer          default(1)
 #  title                              :string           not null
 #  trigger_only_during_business_hours :boolean          default(FALSE)
 #  trigger_rules                      :jsonb
@@ -34,7 +35,8 @@ class Campaign < ApplicationRecord
   validates :inbox_id, presence: true
   validates :title, presence: true
   validates :message, presence: true
-  #validate :validate_campaign_inbox
+  validates :sleep_interval, presence: true
+  # validate :validate_campaign_inbox
   validate :validate_url
   validate :prevent_completed_campaign_from_update, on: :update
   belongs_to :account
@@ -77,7 +79,6 @@ class Campaign < ApplicationRecord
 
     self.campaign_type = 'one_off'
     self.scheduled_at ||= Time.now.utc
-
   end
 
   def validate_url

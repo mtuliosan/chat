@@ -39,7 +39,7 @@ const primaryMenuItems = accountId => [
     label: 'CAMPAIGNS',
     featureFlag: FEATURE_FLAGS.CAMPAIGNS,
     toState: frontendURL(`accounts/${accountId}/campaigns`),
-    toStateName: 'ongoing_campaigns',
+    toStateName: 'one_off',
   },
   {
     icon: 'library',

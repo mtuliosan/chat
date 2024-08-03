@@ -116,6 +116,22 @@
           />
         </label>
 
+        <label :class="{ error: v$.sleep_interval.$error }">
+          {{ $t('CAMPAIGN.ADD.FORM.SLEEP_INTERVAL.LABEL') }}
+
+          <input
+            v-model="sleep_interval"
+            type="number"
+            min="1"
+            max="100"
+            :placeholder="$t('CAMPAIGN.ADD.FORM.SLEEP_INTERVAL.PLACEHOLDER')"
+            @blur="v$.sleep_interval.$touch"
+          />
+          <span v-if="v$.sleep_interval.$error" class="message">
+            {{ $t('CAMPAIGN.ADD.FORM.SLEEP_INTERVAL.ERROR') }}
+          </span>
+        </label>
+
         <woot-input
           v-if="isOngoingType"
           v-model="endPoint"
@@ -177,7 +193,7 @@
 <script>
 import { mapGetters } from 'vuex';
 import { useVuelidate } from '@vuelidate/core';
-import { required } from '@vuelidate/validators';
+import { required, numeric, minValue, maxValue } from '@vuelidate/validators';
 import { useAlert } from 'dashboard/composables';
 import WootMessageEditor from 'dashboard/components/widgets/WootWriter/Editor.vue';
 import campaignMixin from 'shared/mixins/campaignMixin';
@@ -204,6 +220,7 @@ export default {
       timeOnPage: 10,
       show: true,
       enabled: true,
+      sleep_interval: 1,
       triggerOnlyDuringBusinessHours: false,
       scheduledAt: null,
       selectedAudience: [],
@@ -215,6 +232,12 @@ export default {
     const commonValidations = {
       title: {
         required,
+      },
+      sleep_interval: {
+        required,
+        numeric,
+        minValue: minValue(1),
+        maxValue: maxValue(100),
       },
       message: {
         required,
@@ -318,6 +341,7 @@ export default {
           title: this.title,
           message: this.message,
           inbox_id: this.selectedInbox,
+          sleep_interval: this.sleep_interval,
           sender_id: this.selectedSender || null,
           enabled: this.enabled,
           trigger_only_during_business_hours:
@@ -340,6 +364,7 @@ export default {
           message: this.message,
           inbox_id: this.selectedInbox,
           scheduled_at: this.scheduledAt,
+          sleep_interval: this.sleep_interval,
           audience,
         };
       }

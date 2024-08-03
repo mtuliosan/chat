@@ -24,7 +24,7 @@ class Whatsapp::OneoffSmsCampaignService
         next
       end
       send_message(inbox.name, to: contact.phone_number, content: campaign.message)
-      delay = rand(1..30)
+      delay = rand(1..campaign.sleep_interval)
       sleep delay
     end
   end

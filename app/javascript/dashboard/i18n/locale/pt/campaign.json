@@ -17,6 +17,12 @@
           "PLACEHOLDER": "Por favor, digite o nome da campanha",
           "ERROR": "Nome é obrigatório"
         },
+        "SLEEP_INTERVAL": {
+          "LABEL": "Intervalo de disparos (segundos)",
+          "PLACEHOLDER": "",
+          "TOOLTIP": "O intervalo de disparos é o tempo entre cada mensagem enviada. Por exemplo, se o intervalo de disparos for de 60 segundos, a campanha enviará uma mensagem a cada 60 segundos.",
+          "ERROR": "Intervalo de disparos é obrigatório"
+        },
         "SCHEDULED_AT": {
           "LABEL": "Horário agendado",
           "PLACEHOLDER": "Por favor, escolha a hora",
