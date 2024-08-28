@@ -20,40 +20,29 @@ class Whatsapp::OneoffSmsCampaignService
   def process_audience(audience_labels)
     # Divide a mensagem da campanha em partes usando '===' como delimitador
     messages = campaign.message.split('===')
-    # Filtra mensagens não vazias ou em branco
-    valid_messages = messages.reject(&:strip.empty?)
 
-    # Verifica se há mensagens válidas disponíveis
-    if valid_messages.empty?
-      log_info('No valid messages to send.')
-      return
-    end
     campaign.account.contacts.tagged_with(audience_labels, any: true).each do |contact|
       if contact.phone_number.blank?
         log_info("Skipping contact #{contact.id} due to missing phone number")
         next
       end
-
-      send_message(inbox.name, to: contact.phone_number, content: valid_messages.samplee)
       delay = rand(1..campaign.sleep_interval)
-      sleep delay
+
+      send_message(inbox.name, to: contact.phone_number, content: messages.sample, delay: delay)
     end
   end
 
-  def send_message(inbox_name, to:, content:)
+  def send_message(inbox_name, to:, content:, delay:)
     api_key = ENV.fetch('API_KEY_EVOLUTION', nil)
-    uri = URI("https://wappapi.botbuzz.com.br/message/sendText/#{inbox_name}")
+    uri = URI('https://workflow.botbuzz.com.br/webhook/BlastMessenger')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = (uri.scheme == 'https')
     request = Net::HTTP::Post.new(uri.path, { 'Content-Type' => 'application/json', 'apikey' => api_key })
     body = {
-      'number' => to,
-      'options' => {
-        'presence' => 'composing'
-      },
-      'textMessage' => {
-        'text' => content
-      }
+      'evolutions_instance' => inbox_name,
+      'phoneNumber' => to,
+      'message' => content,
+      'sleep' => delay
     }
     request.body = body.to_json
     response = http.request(request)

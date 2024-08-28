@@ -289,8 +289,12 @@ export default {
   setup() {
     const { fetchSignatureFlagFromUISettings, setSignatureFlagForInbox } =
       useUISettings();
-    const v$ = useVuelidate();
-
+    const rules = {
+      subject: { required: requiredIf('isAnEmailInbox') },
+      message: { required },
+      targetInbox: { required },
+    };
+    const v$ = useVuelidate(rules, this);
     return { fetchSignatureFlagFromUISettings, setSignatureFlagForInbox, v$ };
   },
   data() {
@@ -439,6 +443,7 @@ export default {
   },
   mounted() {
     this.setSignature();
+    this.v$.$touch();
   },
   methods: {
     setSignature() {
