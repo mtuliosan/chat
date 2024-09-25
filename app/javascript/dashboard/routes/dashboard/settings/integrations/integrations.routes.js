@@ -4,6 +4,7 @@ const IntegrationHooks = () => import('./IntegrationHooks.vue');
 const Index = () => import('./Index.vue');
 const Webhook = () => import('./Webhooks/Index.vue');
 const DashboardApps = () => import('./DashboardApps/Index.vue');
+const Captain = () => import('./Captain/Index.vue');
 const Slack = () => import('./Slack.vue');
 const SettingsContent = () => import('../Wrapper.vue');
 
@@ -30,6 +31,22 @@ export default {
             permissions: ['administrator'],
           },
         },
+        {
+          path: 'webhook',
+          component: Webhook,
+          name: 'settings_integrations_webhook',
+          meta: {
+            permissions: ['administrator'],
+          },
+        },
+        {
+          path: 'captain',
+          component: Captain,
+          name: 'settings_integrations_captain',
+          meta: {
+            permissions: ['administrator'],
+          },
+        },
       ],
     },
     {
@@ -49,14 +66,6 @@ export default {
         };
       },
       children: [
-        {
-          path: 'webhook',
-          component: Webhook,
-          name: 'settings_integrations_webhook',
-          meta: {
-            permissions: ['administrator'],
-          },
-        },
         {
           path: 'slack',
           name: 'settings_integrations_slack',

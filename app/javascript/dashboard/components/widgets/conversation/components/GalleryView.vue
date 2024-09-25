@@ -1,3 +1,214 @@
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useStoreGetters } from 'dashboard/composables/store';
+import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
+import { messageTimestamp } from 'shared/helpers/timeHelper';
+
+import Thumbnail from 'dashboard/components/widgets/Thumbnail.vue';
+
+const props = defineProps({
+  show: {
+    type: Boolean,
+    required: true,
+  },
+  attachment: {
+    type: Object,
+    required: true,
+  },
+  allAttachments: {
+    type: Array,
+    required: true,
+  },
+});
+
+const emit = defineEmits(['close']);
+
+const getters = useStoreGetters();
+
+const ALLOWED_FILE_TYPES = {
+  IMAGE: 'image',
+  VIDEO: 'video',
+  IG_REEL: 'ig_reel',
+  AUDIO: 'audio',
+};
+
+const MAX_ZOOM_LEVEL = 2;
+const MIN_ZOOM_LEVEL = 1;
+
+const zoomScale = ref(1);
+const activeAttachment = ref({});
+const activeFileType = ref('');
+const activeImageIndex = ref(
+  props.allAttachments.findIndex(
+    attachment => attachment.message_id === props.attachment.message_id
+  ) || 0
+);
+const activeImageRotation = ref(0);
+
+const currentUser = computed(() => getters.getCurrentUser.value);
+
+const hasMoreThanOneAttachment = computed(
+  () => props.allAttachments.length > 1
+);
+
+const readableTime = computed(() => {
+  const { created_at: createdAt } = activeAttachment.value;
+  if (!createdAt) return '';
+  return messageTimestamp(createdAt, 'LLL d yyyy, h:mm a') || '';
+});
+
+const isImage = computed(
+  () => activeFileType.value === ALLOWED_FILE_TYPES.IMAGE
+);
+const isVideo = computed(
+  () =>
+    activeFileType.value === ALLOWED_FILE_TYPES.VIDEO ||
+    activeFileType.value === ALLOWED_FILE_TYPES.IG_REEL
+);
+const isAudio = computed(
+  () => activeFileType.value === ALLOWED_FILE_TYPES.AUDIO
+);
+
+const senderDetails = computed(() => {
+  const {
+    name,
+    available_name: availableName,
+    avatar_url,
+    thumbnail,
+    id,
+  } = activeAttachment.value?.sender || props.attachment?.sender || {};
+  const currentUserID = currentUser.value?.id;
+  return {
+    name: currentUserID === id ? 'You' : name || availableName || '',
+    avatar: thumbnail || avatar_url || '',
+  };
+});
+
+const fileNameFromDataUrl = computed(() => {
+  const { data_url: dataUrl } = activeAttachment.value;
+  if (!dataUrl) return '';
+  const fileName = dataUrl?.split('/').pop();
+  return decodeURIComponent(fileName || '');
+});
+
+const imageRotationStyle = computed(() => ({
+  transform: `rotate(${activeImageRotation.value}deg) scale(${zoomScale.value})`,
+  cursor: zoomScale.value < MAX_ZOOM_LEVEL ? 'zoom-in' : 'zoom-out',
+}));
+
+const onClose = () => {
+  emit('close');
+};
+
+const setImageAndVideoSrc = attachment => {
+  const { file_type: type } = attachment;
+  if (!Object.values(ALLOWED_FILE_TYPES).includes(type)) {
+    return;
+  }
+  activeAttachment.value = attachment;
+  activeFileType.value = type;
+};
+
+const onClickChangeAttachment = (attachment, index) => {
+  if (!attachment) {
+    return;
+  }
+  activeImageIndex.value = index;
+  setImageAndVideoSrc(attachment);
+  activeImageRotation.value = 0;
+  zoomScale.value = 1;
+};
+
+const onClickDownload = () => {
+  const { file_type: type, data_url: url } = activeAttachment.value;
+  if (!Object.values(ALLOWED_FILE_TYPES).includes(type)) {
+    return;
+  }
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `attachment.${type}`;
+  link.click();
+};
+
+const onRotate = type => {
+  if (!isImage.value) {
+    return;
+  }
+
+  const rotation = type === 'clockwise' ? 90 : -90;
+
+  // Reset rotation if it is 360
+  if (Math.abs(activeImageRotation.value) === 360) {
+    activeImageRotation.value = rotation;
+  } else {
+    activeImageRotation.value += rotation;
+  }
+};
+
+const onZoom = scale => {
+  if (!isImage.value) {
+    return;
+  }
+
+  const newZoomScale = zoomScale.value + scale;
+  // Check if the new zoom scale is within the allowed range
+  if (newZoomScale > MAX_ZOOM_LEVEL) {
+    // Set zoom to max but do not reset to default
+    zoomScale.value = MAX_ZOOM_LEVEL;
+    return;
+  }
+  if (newZoomScale < MIN_ZOOM_LEVEL) {
+    // Set zoom to min but do not reset to default
+    zoomScale.value = MIN_ZOOM_LEVEL;
+    return;
+  }
+  // If within bounds, update the zoom scale
+  zoomScale.value = newZoomScale;
+};
+
+const onClickZoomImage = () => {
+  onZoom(0.1);
+};
+
+const onWheelImageZoom = e => {
+  if (!isImage.value) {
+    return;
+  }
+  const scale = e.deltaY > 0 ? -0.1 : 0.1;
+  onZoom(scale);
+};
+
+const keyboardEvents = {
+  Escape: {
+    action: () => {
+      onClose();
+    },
+  },
+  ArrowLeft: {
+    action: () => {
+      onClickChangeAttachment(
+        props.allAttachments[activeImageIndex.value - 1],
+        activeImageIndex.value - 1
+      );
+    },
+  },
+  ArrowRight: {
+    action: () => {
+      onClickChangeAttachment(
+        props.allAttachments[activeImageIndex.value + 1],
+        activeImageIndex.value + 1
+      );
+    },
+  },
+};
+useKeyboardEvents(keyboardEvents);
+
+onMounted(() => {
+  setImageAndVideoSrc(props.attachment);
+});
+</script>
+
+<!-- eslint-disable vue/no-mutating-props -->
 <template>
   <woot-modal
     full-width
@@ -18,7 +229,7 @@
           v-if="senderDetails"
           class="items-center flex justify-start min-w-[15rem]"
         >
-          <thumbnail
+          <Thumbnail
             v-if="senderDetails.avatar"
             :username="senderDetails.name"
             :src="senderDetails.avatar"
@@ -159,305 +370,3 @@
     </div>
   </woot-modal>
 </template>
-
-<script>
-import { mapGetters } from 'vuex';
-import keyboardEventListenerMixins from 'shared/mixins/keyboardEventListenerMixins';
-import { messageTimestamp } from 'shared/helpers/timeHelper';
-
-import Thumbnail from 'dashboard/components/widgets/Thumbnail.vue';
-
-const ALLOWED_FILE_TYPES = {
-  IMAGE: 'image',
-  VIDEO: 'video',
-  IG_REEL: 'ig_reel',
-  AUDIO: 'audio',
-};
-
-const MAX_ZOOM_LEVEL = 2;
-const MIN_ZOOM_LEVEL = 1;
-
-export default {
-  components: {
-    Thumbnail,
-  },
-  mixins: [keyboardEventListenerMixins],
-  props: {
-    show: {
-      type: Boolean,
-      required: true,
-    },
-    attachment: {
-      type: Object,
-      required: true,
-    },
-    allAttachments: {
-      type: Array,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      zoomScale: 1,
-      panX: 0,
-      panY: 0,
-      panStartX: 0,
-      panStartY: 0,
-      isPanning: false,
-      activeAttachment: {},
-      activeFileType: '',
-      activeImageIndex:
-        this.allAttachments.findIndex(
-          attachment => attachment.message_id === this.attachment.message_id
-        ) || 0,
-      activeImageRotation: 0,
-    };
-  },
-  computed: {
-    ...mapGetters({
-      currentUser: 'getCurrentUser',
-    }),
-    hasMoreThanOneAttachment() {
-      return this.allAttachments.length > 1;
-    },
-    readableTime() {
-      const { created_at: createdAt } = this.activeAttachment;
-      if (!createdAt) return '';
-      return messageTimestamp(createdAt, 'LLL d yyyy, h:mm a') || '';
-    },
-    isImage() {
-      return this.activeFileType === ALLOWED_FILE_TYPES.IMAGE;
-    },
-    isVideo() {
-      return (
-        this.activeFileType === ALLOWED_FILE_TYPES.VIDEO ||
-        this.activeFileType === ALLOWED_FILE_TYPES.IG_REEL
-      );
-    },
-    isAudio() {
-      return this.activeFileType === ALLOWED_FILE_TYPES.AUDIO;
-    },
-    senderDetails() {
-      const {
-        name,
-        available_name: availableName,
-        avatar_url,
-        thumbnail,
-        id,
-      } = this.activeAttachment?.sender || this.attachment?.sender || {};
-      const currentUserID = this.currentUser?.id;
-      return {
-        name: currentUserID === id ? 'You' : name || availableName || '',
-        avatar: thumbnail || avatar_url || '',
-      };
-    },
-    fileNameFromDataUrl() {
-      const { data_url: dataUrl } = this.activeAttachment;
-      if (!dataUrl) return '';
-      const fileName = dataUrl?.split('/').pop();
-      return decodeURIComponent(fileName || '');
-    },
-    imageStyle() {
-      return {
-        transform: `scale(${this.zoomScale}) translate(${this.panX}px, ${this.panY}px) rotate(${this.activeImageRotation}deg)`,
-        cursor: this.zoomScale < MAX_ZOOM_LEVEL ? 'zoom-in' : 'zoom-out',
-      };
-    },
-  },
-  mounted() {
-    this.setImageAndVideoSrc(this.attachment);
-  },
-  methods: {
-    onClose() {
-      this.$emit('close');
-    },
-    onClickChangeAttachment(attachment, index) {
-      if (!attachment) {
-        return;
-      }
-      this.activeImageIndex = index;
-      this.setImageAndVideoSrc(attachment);
-      this.resetZoomAndPan();
-    },
-    setImageAndVideoSrc(attachment) {
-      const { file_type: type } = attachment;
-      if (!Object.values(ALLOWED_FILE_TYPES).includes(type)) {
-        return;
-      }
-      this.activeAttachment = attachment;
-      this.activeFileType = type;
-    },
-    getKeyboardEvents() {
-      return {
-        Escape: {
-          action: () => {
-            this.onClose();
-          },
-        },
-        ArrowLeft: {
-          action: () => {
-            this.onClickChangeAttachment(
-              this.allAttachments[this.activeImageIndex - 1],
-              this.activeImageIndex - 1
-            );
-          },
-        },
-        ArrowRight: {
-          action: () => {
-            this.onClickChangeAttachment(
-              this.allAttachments[this.activeImageIndex + 1],
-              this.activeImageIndex + 1
-            );
-          },
-        },
-      };
-    },
-    onClickDownload() {
-      const { file_type: type, data_url: url } = this.activeAttachment;
-      if (!Object.values(ALLOWED_FILE_TYPES).includes(type)) {
-        return;
-      }
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `attachment.${type}`;
-      link.click();
-    },
-    onRotate(type) {
-      if (!this.isImage) {
-        return;
-      }
-
-      const rotation = type === 'clockwise' ? 90 : -90;
-
-      // Reset rotation if it is 360
-      if (Math.abs(this.activeImageRotation) === 360) {
-        this.activeImageRotation = rotation;
-      } else {
-        this.activeImageRotation += rotation;
-      }
-    },
-
-    onZoom(scale) {
-      if (!this.isImage) {
-        return;
-      }
-
-      const newZoomScale = this.zoomScale + scale;
-      // Check if the new zoom scale is within the allowed range
-      if (newZoomScale > MAX_ZOOM_LEVEL) {
-        // Set zoom to max but do not reset to default
-        this.zoomScale = MAX_ZOOM_LEVEL;
-        return;
-      }
-      if (newZoomScale < MIN_ZOOM_LEVEL) {
-        // Set zoom to min but do not reset to default
-        this.zoomScale = MIN_ZOOM_LEVEL;
-        this.panX = 0;
-        this.panY = 0;
-        return;
-      }
-      // If within bounds, update the zoom scale
-      this.zoomScale = newZoomScale;
-    },
-    onWheelImageZoom(e) {
-      if (!this.isImage) {
-        return;
-      }
-
-      const scale = e.deltaY > 0 ? -0.1 : 0.1;
-      const newZoomScale = this.zoomScale + scale;
-
-      // Check if the new zoom scale is within the allowed range
-      if (newZoomScale > MAX_ZOOM_LEVEL) {
-        this.zoomScale = MAX_ZOOM_LEVEL;
-        return;
-      }
-      if (newZoomScale < MIN_ZOOM_LEVEL) {
-        this.zoomScale = MIN_ZOOM_LEVEL;
-        // Reset pan to default when zoom is at minimum
-        this.panX = 0;
-        this.panY = 0;
-        return;
-      }
-
-      // Calculate the focal point of the zoom
-      const rect = e.target.getBoundingClientRect();
-      const offsetX = (e.clientX - rect.left) / rect.width;
-      const offsetY = (e.clientY - rect.top) / rect.height;
-
-      const newPanX =
-        this.panX -
-        (offsetX - 0.5) * (newZoomScale - this.zoomScale) * rect.width;
-      const newPanY =
-        this.panY -
-        (offsetY - 0.5) * (newZoomScale - this.zoomScale) * rect.height;
-
-      this.zoomScale = newZoomScale;
-      this.panX = newPanX;
-      this.panY = newPanY;
-    },
-
-    onPanStart(event) {
-      if (!this.isImage || this.zoomScale === 1) {
-        return;
-      }
-
-      this.isPanning = true;
-      this.panStartX = event.clientX;
-      this.panStartY = event.clientY;
-
-      this.$refs.imageContainer.style.cursor = 'grabbing';
-    },
-
-    onPanMove(event) {
-      if (!this.isPanning || this.zoomScale === 1 || !this.$refs.image) return;
-
-      const deltaX = event.clientX - this.panStartX;
-      const deltaY = event.clientY - this.panStartY;
-
-      this.panX += deltaX;
-      this.panY += deltaY;
-
-      this.panStartX = event.clientX;
-      this.panStartY = event.clientY;
-
-      requestAnimationFrame(() => {
-        this.$refs.imageContainer.style.transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.zoomScale})`;
-      });
-    },
-
-    onPanEnd() {
-      if (this.zoomScale === 1) {
-        return;
-      }
-
-      this.isPanning = false; 
-      this.$refs.imageContainer.style.cursor = 'grab';
-    },
-
-    resetZoomAndPan() {
-      this.zoomScale = 1;
-      this.panX = 0;
-      this.panY = 0;
-      this.activeImageRotation = 0;
-    },
-  },
-};
-</script>
-
-<style scoped>
-.image-container {
-  overflow: hidden;
-  position: relative;
-}
-
-.modal-image {
-  transition: transform 0.3s ease;
-  user-select: none; /* Evitar seleção de texto durante o pan */
-  cursor: grab; /* Alterar cursor durante o pan */
-}
-
-.image-container:active .modal-image {
-  cursor: grabbing; /* Alterar cursor ativo durante o pan */
-}
-</style>

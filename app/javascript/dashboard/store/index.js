@@ -27,6 +27,7 @@ import conversationTypingStatus from './modules/conversationTypingStatus';
 import conversationWatchers from './modules/conversationWatchers';
 import csat from './modules/csat';
 import customViews from './modules/customViews';
+import customRole from './modules/customRole';
 import dashboardApps from './modules/dashboardApps';
 import globalConfig from 'shared/store/globalConfig';
 import inboxAssignableAgents from './modules/inboxAssignableAgents';
@@ -45,7 +46,7 @@ import userNotificationSettings from './modules/userNotificationSettings';
 import webhooks from './modules/webhooks';
 import draftMessages from './modules/draftMessages';
 import SLAReports from './modules/SLAReports';
-import forwardMessage from './modules/forwardMessage';
+import webphone from './modules/webphone';
 
 const plugins = [];
 
@@ -78,6 +79,7 @@ export default new Vuex.Store({
     conversationWatchers,
     csat,
     customViews,
+    customRole,
     dashboardApps,
     forwardMessage,
     globalConfig,
@@ -97,6 +99,7 @@ export default new Vuex.Store({
     draftMessages,
     sla,
     slaReports: SLAReports,
+    webphone,
   },
   plugins,
 });

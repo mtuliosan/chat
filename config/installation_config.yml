@@ -113,7 +113,7 @@
 - name: FACEBOOK_API_VERSION
   display_title: 'Facebook API Version'
   description: 'Configure this if you want to use a different Facebook API version. Make sure its prefixed with `v`'
-  value: 'v18.0'
+  value: 'v20.0'
   locked: false
 - name: ENABLE_MESSENGER_CHANNEL_HUMAN_AGENT
   display_title: 'Enable human agent'
@@ -132,6 +132,40 @@
   display_title: 'Azure App Secret'
   locked: false
 # End of Microsoft Email Channel Config
+
+# MARK: UNOAPI Channel Config
+- name: UNOAPI_AUTH_TOKEN
+  value:
+  display_title: 'UNO API Auth Token'
+  description: 'The Auth Token for UNO API. Find more details on how to configure UNOAPI here: https://github.com/clairton/unoapi-cloud/tree/main'
+# End of UNOAPI Channel Config
+
+# MARK: WhatsApp Embedded
+- name: WHATSAPP_EMBEDDED_LICENSE_KEY
+  value:
+  display_title: 'License Key'
+  description: >
+    The license key for WhatsApp Embedded
+    This key is required to access WhatsApp's embedded functionality. Contact us via WhatsApp: https://bit.ly/3zfMVgT
+- name: WHATSAPP_EMBEDDED_FACEBOOK_APP_ID
+  value:
+  display_title: 'Facebook App ID'
+  description: 'The Facebook App ID for WhatsApp Embedded'
+- name: WHATSAPP_EMBEDDED_FACEBOOK_CONFIG_ID
+  value:
+  display_title: 'Facebook Config ID'
+  description: 'The Facebook Config ID for WhatsApp Embedded'
+- name: WHATSAPP_EMBEDDED_FACEBOOK_TOKEN
+  value:
+  display_title: 'Facebook Token'
+  description: 'The Facebook Token for WhatsApp Embedded'
+- name: WABA_EMBEDDED_SIGNUP
+  type: boolean
+  value: false
+  display_title: 'WABA Embedded Signup'
+  description: 'Enable WABA Embedded Signup'
+  locked: false
+# End of WhatsApp Embedded
 
 # ------- Chatwoot Internal Config for Cloud ----#
 - name: CHATWOOT_INBOX_TOKEN
@@ -167,6 +201,11 @@
   value:
   display_title: 'Dashboard Scripts'
   description: 'Scripts are loaded as the last item in the <body> tag'
+  type: code
+- name: BLOCKED_EMAIL_DOMAINS
+  value:
+  display_title: 'Blocked Email Domains'
+  description: 'Add a domain per line to block them from signing up, accepts Regex'
   type: code
 # ------- End of Chatwoot Internal Config for Cloud ----#
 
@@ -219,8 +258,18 @@
 ## ------ End of Configs added for FCM v1 notifications ------ ##
 
 ## ------ Configs custom ------ ##
-- name: CONVESATION_STYLE_CSS
+- name: CONVERSATION_STYLE_CSS
   display_title: 'Conversation Style CSS'
   value:
   description: 'Customize conversation, put your valid css'
 ## ------ End of Configs custom ------ ##
+## ----- Captain Configs ----- ##
+- name: CAPTAIN_API_URL
+  value:
+  display_title: 'Captain API URL'
+  description: 'The API URL for Captain'
+- name: CAPTAIN_APP_URL
+  value:
+  display_title: 'Captain App URL'
+  description: 'The App URL for Captain'
+## ----- End of Captain Configs ----- ##
