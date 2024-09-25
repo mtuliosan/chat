@@ -1,34 +1,3 @@
-<template>
-  <div>
-    <form
-      v-if="!hasSubmitted"
-      class="email-input-group"
-      @submit.prevent="onSubmit"
-    >
-      <input
-        v-model.trim="email"
-        class="form-input"
-        :placeholder="$t('EMAIL_PLACEHOLDER')"
-        :class="inputHasError"
-        @input="v$.email.$touch"
-        @keydown.enter="onSubmit"
-      />
-      <button
-        class="button small"
-        :disabled="v$.email.$invalid"
-        :style="{
-          background: widgetColor,
-          borderColor: widgetColor,
-          color: textColor,
-        }"
-      >
-        <fluent-icon v-if="!isUpdating" icon="chevron-right" />
-        <spinner v-else class="mx-2" />
-      </button>
-    </form>
-  </div>
-</template>
-
 <script>
 import { mapGetters } from 'vuex';
 import { useVuelidate } from '@vuelidate/core';
@@ -37,14 +6,13 @@ import { getContrastingTextColor } from '@chatwoot/utils';
 
 import FluentIcon from 'shared/components/FluentIcon/Index.vue';
 import Spinner from 'shared/components/Spinner.vue';
-import darkModeMixin from 'widget/mixins/darkModeMixin.js';
+import { useDarkMode } from 'widget/composables/useDarkMode';
 
 export default {
   components: {
     FluentIcon,
     Spinner,
   },
-  mixins: [darkModeMixin],
   props: {
     messageId: {
       type: Number,
@@ -56,7 +24,8 @@ export default {
     },
   },
   setup() {
-    return { v$: useVuelidate() };
+    const { getThemeClass } = useDarkMode();
+    return { v$: useVuelidate(), getThemeClass };
   },
   data() {
     return {
@@ -78,9 +47,9 @@ export default {
       );
     },
     inputColor() {
-      return `${this.$dm('bg-white', 'dark:bg-slate-600')}
-        ${this.$dm('text-black-900', 'dark:text-slate-50')}
-        ${this.$dm('border-black-200', 'dark:border-black-500')}`;
+      return `${this.getThemeClass('bg-white', 'dark:bg-slate-600')}
+        ${this.getThemeClass('text-black-900', 'dark:text-slate-50')}
+        ${this.getThemeClass('border-black-200', 'dark:border-black-500')}`;
     },
     inputHasError() {
       return this.v$.email.$error
@@ -114,6 +83,37 @@ export default {
   },
 };
 </script>
+
+<template>
+  <div>
+    <form
+      v-if="!hasSubmitted"
+      class="email-input-group"
+      @submit.prevent="onSubmit"
+    >
+      <input
+        v-model.trim="email"
+        class="form-input"
+        :placeholder="$t('EMAIL_PLACEHOLDER')"
+        :class="inputHasError"
+        @input="v$.email.$touch"
+        @keydown.enter="onSubmit"
+      />
+      <button
+        class="button small"
+        :disabled="v$.email.$invalid"
+        :style="{
+          background: widgetColor,
+          borderColor: widgetColor,
+          color: textColor,
+        }"
+      >
+        <FluentIcon v-if="!isUpdating" icon="chevron-right" />
+        <Spinner v-else class="mx-2" />
+      </button>
+    </form>
+  </div>
+</template>
 
 <style lang="scss" scoped>
 @import '~widget/assets/scss/variables.scss';

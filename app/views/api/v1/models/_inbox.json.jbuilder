@@ -8,6 +8,7 @@ json.greeting_message resource.greeting_message
 json.working_hours_enabled resource.working_hours_enabled
 json.enable_email_collect resource.enable_email_collect
 json.csat_survey_enabled resource.csat_survey_enabled
+json.csat_response_visible resource.csat_response_visible
 json.enable_auto_assignment resource.enable_auto_assignment
 json.auto_assignment_config resource.auto_assignment_config
 json.out_of_office_message resource.out_of_office_message
@@ -18,6 +19,7 @@ json.allow_messages_after_resolved resource.allow_messages_after_resolved
 json.lock_to_single_conversation resource.lock_to_single_conversation
 json.sender_name_type resource.sender_name_type
 json.business_name resource.business_name
+json.external_token resource.external_token
 json.allow_agent_to_delete_message resource.allow_agent_to_delete_message
 
 if resource.portal.present?

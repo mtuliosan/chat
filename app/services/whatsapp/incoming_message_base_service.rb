@@ -56,7 +56,9 @@ class Whatsapp::IncomingMessageBaseService
 
   def update_message_with_status(message, status)
     if status[:status] == 'deleted'
-      message.assign_attributes(content: I18n.t('conversations.messages.deleted'), content_attributes: { deleted: true })
+      original_content = message.content
+      new_content = "#{I18n.t('conversations.messages.deleted')}\n#{original_content}"
+      message.assign_attributes(content: new_content, content_attributes: { deleted: true })
     else
       message.status = status[:status]
     end
@@ -95,7 +97,8 @@ class Whatsapp::IncomingMessageBaseService
     contact_params = @processed_params[:contacts]&.first
     return if contact_params.blank?
 
-    waid = processed_waid(contact_params[:wa_id])
+    waid = brazil_phone_number?(contact_params[:wa_id]) ? normalised_brazil_mobile_number(contact_params[:wa_id]) : contact_params[:wa_id]
+    waid = processed_waid(waid)
 
     contact_inbox = ::ContactInboxWithContactBuilder.new(
       source_id: waid,
