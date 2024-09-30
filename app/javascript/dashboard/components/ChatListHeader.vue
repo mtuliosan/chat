@@ -87,6 +87,9 @@ const hasAppliedFiltersOrActiveFolders = computed(() => {
           @click="emit('resetFilters')"
         />
       </div>
+    
+    </div>  
+     <div v-if="hasActiveFolders">
       <input
         type="text"
         :placeholder="$t('CHAT_LIST.SEARCH_CHAT')"
@@ -94,12 +97,26 @@ const hasAppliedFiltersOrActiveFolders = computed(() => {
         :value="searchQuery"
         @input="$emit('input-search', $event)"
       />
-    </div>
-    <div v-if="hasActiveFolders">
-  
       <woot-button
           v-tooltip.top-end="$t('FILTER.CUSTOM_VIEWS.EDIT.EDIT_BUTTON')"
           size="tiny"
+          variant="smooth"
+          color-scheme="secondary"
+          icon="edit"
+          @click="emit('filtersModal')"
+        />
+        <woot-button
+          v-tooltip.top-end="$t('FILTER.CUSTOM_VIEWS.DELETE.DELETE_BUTTON')"
+          size="tiny"
+          variant="smooth"
+          color-scheme="alert"
+          icon="delete"
+          @click="emit('deleteFolders')"
+        />
+      </div>
+      <woot-button
+        v-if="!hasHideFiltersForAgents && !hasActiveFolders"
+        v-tooltip.right="$t('FILTER.TOOLTIP_LABEL')"
         variant="smooth"
         color-scheme="secondary"
         icon="filter"
