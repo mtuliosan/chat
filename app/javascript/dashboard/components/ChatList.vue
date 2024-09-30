@@ -26,10 +26,6 @@ import {
   isOnUnattendedView,
 } from '../store/modules/conversations/helpers/actionHelpers';
 import { CONVERSATION_EVENTS } from '../helper/AnalyticsHelper/events';
-import { CMD_SNOOZE_CONVERSATION } from 'dashboard/routes/dashboard/commands/commandBarBusEvents';
-import { findSnoozeTime } from 'dashboard/helper/snoozeHelpers';
-import { getUnixTime } from 'date-fns';
-import CustomSnoozeModal from 'dashboard/components/CustomSnoozeModal.vue';
 import IntersectionObserver from './IntersectionObserver.vue';
 import {
   getUserPermissions,
@@ -49,7 +45,6 @@ export default {
     ConversationBulkActions,
     IntersectionObserver,
     VirtualList,
-    CustomSnoozeModal,
   },
   provide() {
     return {
@@ -199,7 +194,7 @@ export default {
         root: this.$refs.conversationListRef,
         rootMargin: '100px 0px 100px 0px',
       },
-      showCustomSnoozeModal: false,
+      
 
       itemComponent: ConversationItem,
       // virtualListExtraProps is to pass the props to the conversationItem component.
@@ -495,11 +490,8 @@ export default {
       this.$store.dispatch('conversationStats/get', this.conversationFilters);
     });
 
-    this.$emitter.on(CMD_SNOOZE_CONVERSATION, this.onCmdSnoozeConversation);
   },
-  beforeDestroy() {
-    this.$emitter.off(CMD_SNOOZE_CONVERSATION, this.onCmdSnoozeConversation);
-  },
+  
   methods: {
     onInputSearch(event) {
       const newQuery = event.target.value.toLowerCase();
