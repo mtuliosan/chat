@@ -13,6 +13,8 @@ import UpdateActions from './UpdateActions.vue';
 import LabelActions from './LabelActions.vue';
 import TeamActions from './TeamActions.vue';
 import CustomSnoozeModal from 'dashboard/components/CustomSnoozeModal.vue';
+import alertMixin from 'shared/mixins/alertMixin';
+
 export default {
   components: {
     AgentSelector,
@@ -21,6 +23,7 @@ export default {
     TeamActions,
     CustomSnoozeModal,
   },
+  mixins: [alertMixin],
   props: {
     conversations: {
       type: Array,
@@ -56,6 +59,15 @@ export default {
       popoverPositions: {},
       showCustomTimeSnoozeModal: false,
     };
+  },
+  computed: {
+    ...mapGetters({
+      selectedMessageIds: 'forwardMessage/getSelectedMessageIds',
+      getConversationId: 'forwardMessage/getConversationId',
+    }),
+    hasSelectedMessages() {
+      return this.selectedMessageIds.length > 0;
+    },
   },
   mounted() {
     this.$emitter.on(
@@ -129,6 +141,16 @@ export default {
     toggleUpdateActions() {
       this.showUpdateActions = !this.showUpdateActions;
     },
+    toggleForwardActions() {
+      this.$store.dispatch('forwardMessage', {
+        conversationId: this.getConversationId,
+        messages: this.selectedMessageIds,
+        contacts: this.conversations,
+      });
+      this.showAlert('Encaminhando mensagem...');
+      this.$emit('select-all-conversations', false);
+      this.$store.dispatch('forwardMessage/clearImmediately');
+    },
     toggleLabelActions() {
       this.showLabelActions = !this.showLabelActions;
     },
@@ -162,6 +184,15 @@ export default {
         </span>
       </label>
       <div class="flex items-center gap-1 bulk-action__actions">
+        <woot-button
+          v-if="hasSelectedMessages"
+          v-tooltip="$t('BULK_ACTION.LABELS.FORWARD_LABELS')"
+          size="tiny"
+          variant="smooth"
+          color-scheme="secondary"
+          icon="arrow-redo"
+          @click="toggleForwardActions"
+        />
         <woot-button
           v-tooltip="$t('BULK_ACTION.LABELS.ASSIGN_LABELS')"
           size="tiny"
@@ -234,6 +265,13 @@ export default {
           @close="showTeamsList = false"
         />
       </transition>
+    </div>
+    <div v-if="selectedMessageIds.length > 0" class="bulk-action__alert">
+      {{
+        $t('BULK_ACTION.MESSAGES_SELECTED_ALERT', {
+          conversationCount: selectedMessageIds.length,
+        })
+      }}
     </div>
     <div v-if="allConversationsSelected" class="bulk-action__alert">
       {{ $t('BULK_ACTION.ALL_CONVERSATIONS_SELECTED_ALERT') }}

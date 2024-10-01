@@ -109,6 +109,11 @@ export const AUTOMATIONS = {
         attributeI18nKey: 'RESOLVE_CONVERSATION',
       },
       {
+        key: 'reopen_conversation',
+        name: 'Reopen conversation',
+        attributeI18nKey: 'REOPEN_CONVERSATION',
+      },
+      {
         key: 'send_webhook_event',
         name: 'Send Webhook Event',
         attributeI18nKey: 'SEND_WEBHOOK_EVENT',
@@ -238,6 +243,11 @@ export const AUTOMATIONS = {
         key: 'resolve_conversation',
         name: 'Resolve conversation',
         attributeI18nKey: 'RESOLVE_CONVERSATION',
+      },
+      {
+        key: 'reopen_conversation',
+        name: 'ReOpen conversation',
+        attributeI18nKey: 'REOPEN_CONVERSATION',
       },
       {
         key: 'send_webhook_event',
@@ -594,6 +604,11 @@ export const AUTOMATION_ACTION_TYPES = [
   {
     key: 'resolve_conversation',
     label: 'Resolve conversation',
+    inputType: null,
+  },
+  {
+    key: 'reopen_conversation',
+    name: 'ReOpen conversation',    
     inputType: null,
   },
   {

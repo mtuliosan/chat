@@ -130,7 +130,8 @@ const validateSingleAction = action => {
   const noParamActions = [
     'mute_conversation',
     'snooze_conversation',
-    'resolve_conversation',
+    'reopen_conversation',
+    'reopen_conversation',
     'remove_assigned_team',
   ];
 

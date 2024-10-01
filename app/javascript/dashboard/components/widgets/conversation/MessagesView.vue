@@ -104,6 +104,8 @@ export default {
 
   computed: {
     ...mapGetters({
+      selectedMessageIds: 'forwardMessage/getSelectedMessageIds',
+      isShowForwardModal: 'forwardMessage/isShowForwardModal',
       currentChat: 'getSelectedChat',
       listLoadingStatus: 'getAllMessagesLoaded',
       currentAccountId: 'getCurrentAccountId',
@@ -275,6 +277,15 @@ export default {
   },
 
   methods: {
+    ...mapActions('forwardMessage', [
+      'addSelectedMessageId',
+      'removeSelectedMessageId',
+      'clearImmediately',
+      'setConversationId',
+      'RemoveConversationId',
+      'showForwardModal',
+      'hideForwardModal',
+    ]),
     async fetchSuggestions() {
       // start empty, this ensures that the label suggestions are not shown
       this.labelSuggestions = [];
@@ -313,6 +324,19 @@ export default {
           this.scrollToBottom();
         }
       });
+    },
+    handlerForwardTo() {
+      if (this.isShowForwardModal === true) this.clearImmediately();
+      else this.showForwardModal();
+    },
+    toggleMessageSelection(messageId) {
+      if (this.selectedMessageIds.includes(messageId)) {
+        this.removeSelectedMessageId(messageId);
+      } else {
+        this.addSelectedMessageId(messageId);
+        this.setConversationId(this.currentChat.id);
+      }
+      if (this.selectedMessageIds.length === 0) this.RemoveConversationId();
     },
     isLabelSuggestionDismissed() {
       return LocalStorage.getFlag(
@@ -505,6 +529,7 @@ export default {
         class="message--read ph-no-capture"
         data-clarity-mask="True"
         :data="message"
+        :show-checkbox="isShowForwardModal"
         :is-a-tweet="isATweet"
         :is-a-whatsapp-channel="isAWhatsAppChannel"
         :is-web-widget-inbox="isAWebWidgetInbox"
@@ -513,6 +538,8 @@ export default {
         :is-instagram="isInstagramDM"
         :inbox-supports-reply-to="inboxSupportsReplyTo"
         :in-reply-to="getInReplyToMessage(message)"
+        @forwardTo="handlerForwardTo"
+        @toggleMessageSelection="toggleMessageSelection"
       />
       <li v-show="unreadMessageCount != 0" class="unread--toast">
         <span>
@@ -530,6 +557,7 @@ export default {
         class="message--unread ph-no-capture"
         data-clarity-mask="True"
         :data="message"
+        :show-checkbox="isShowForwardModal"
         :is-a-tweet="isATweet"
         :is-a-whatsapp-channel="isAWhatsAppChannel"
         :is-web-widget-inbox="isAWebWidgetInbox"
@@ -537,6 +565,7 @@ export default {
         :is-instagram-dm="isInstagramDM"
         :inbox-supports-reply-to="inboxSupportsReplyTo"
         :in-reply-to="getInReplyToMessage(message)"
+         @forwardTo="handlerForwardTo"
       />
       <ConversationLabelSuggestion
         v-if="shouldShowLabelSuggestions"

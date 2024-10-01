@@ -47,6 +47,7 @@ import webhooks from './modules/webhooks';
 import draftMessages from './modules/draftMessages';
 import SLAReports from './modules/SLAReports';
 import webphone from './modules/webphone';
+import forwardMessage from './modules/forwardMessage';
 
 const plugins = [];
 
@@ -81,6 +82,7 @@ export default new Vuex.Store({
     customViews,
     customRole,
     dashboardApps,
+    forwardMessage,
     globalConfig,
     inboxAssignableAgents,
     inboxes,

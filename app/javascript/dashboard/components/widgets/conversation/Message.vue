@@ -68,6 +68,10 @@ export default {
       type: Object,
       default: () => ({}),
     },
+    showCheckbox: {
+      type: Boolean,
+      default: false,
+    },
     inReplyTo: {
       type: Promise,
       default: Promise.resolve({}),
@@ -86,9 +90,17 @@ export default {
       contextMenuPosition: {},
       showBackgroundHighlight: false,
       inReplyToMessage: {},
+      isChecked: false,
+      isHovered: false,
     };
   },
   computed: {
+    ...mapGetters({
+      selectedMessageIds: 'forwardMessage/getSelectedMessageIds',
+    }),
+    ...mapState({
+      selectedMessageIdsState: state => state.forwardMessage.selectedMessageIds,
+    }),
     attachments() {
       // Here it is used to get sender and created_at for each attachment
       return this.data?.attachments.map(attachment => ({
@@ -349,6 +361,9 @@ export default {
     data() {
       this.hasMediaLoadError = false;
     },
+    selectedMessageIdsState() {
+      this.isChecked = this.selectedMessageIds.includes(this.data.id);
+    },
   },
   async mounted() {
     this.hasMediaLoadError = false;
@@ -361,6 +376,12 @@ export default {
     clearTimeout(this.higlightTimeout);
   },
   methods: {
+    handleForwardTo(messageId) {
+      this.$emit('forwardTo', messageId);
+    },
+    toggleMessageSelection(messageId) {
+      this.$emit('toggleMessageSelection', messageId);
+    },
     isAttachmentImageVideoAudio(fileType) {
       return ['image', 'audio', 'video', 'story_mention', 'ig_reel'].includes(
         fileType
@@ -449,11 +470,25 @@ export default {
     v-if="shouldRenderMessage"
     :id="`message${data.id}`"
     class="group"
-    :class="[alignBubble]"
+    :class="[
+      alignBubble,
+      'group',
+      { 'gray-background': isChecked || isHovered },
+    ]"
   >
-    <div :class="wrapClass">
+  <div :class="[wrapClass, { 'with-checkbox-margin': showCheckbox }]">
+      <input
+      v-show="showCheckbox"
+      :id="`checkbox-message${data.id}`"
+      v-model="isChecked"
+      type="checkbox"
+      class="left-checkbox"
+      @mouseover="isHovered = true"
+      @mouseleave="isHovered = false"
+      @click="toggleMessageSelection(data.id)"
+    />
       <div
-        v-if="isFailed && !data.source_id && !hasOneDayPassed && !isAnEmailInbox"
+        v-if="isFailed && !hasOneDayPassed && !isAnEmailInbox"
         class="message-failed--alert"
       >
         <woot-button
@@ -586,6 +621,7 @@ export default {
         @open="openContextMenu"
         @close="closeContextMenu"
         @replyTo="handleReplyTo"
+        @forwardTo="handleForwardTo"
       />
     </div>
   </li>
@@ -750,6 +786,18 @@ li.right {
 
 .context-menu {
   @apply relative;
+}
+
+.left-checkbox {
+  position: absolute;
+  margin-left: 5px;
+  top: 41%;
+}
+.with-checkbox-margin {
+  margin-left: 25px !important;
+}
+.gray-background {
+  @apply bg-slate-50 dark:bg-slate-700;
 }
 
 /* Markdown styling */

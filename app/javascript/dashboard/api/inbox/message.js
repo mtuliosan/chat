@@ -100,11 +100,10 @@ class MessageApi extends ApiClient {
     return axios.get(`${this.url}/${conversationId}/messages`, { params });
   }
 
-  forwardMessage(conversationId, messageId, contacts) {
-    return axios.post(
-      `${this.url}/${conversationId}/messages/${messageId}/forward`,
-      {
+  forwardMessage(conversationId, messages, contacts) {
+    return axios.post(`${this.url}/${conversationId}/messages/1/forward`, {
         contacts,
+        messages
       }
     );
   }

@@ -23,6 +23,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  searchQuery: {
+    type: String,
+    default: '',
+  },
 });
 
 const emit = defineEmits([
@@ -84,6 +88,13 @@ const hasAppliedFiltersOrActiveFolders = computed(() => {
         />
       </div>
       <div v-if="hasActiveFolders">
+        <input
+        type="text"
+        :placeholder="$t('CHAT_LIST.SEARCH_CHAT')"
+        class="contact-search border-slate-100 dark:border-slate-600"
+        :value="searchQuery"
+        @input="$emit('input-search', $event)"
+      />
         <woot-button
           v-tooltip.top-end="$t('FILTER.CUSTOM_VIEWS.EDIT.EDIT_BUTTON')"
           size="tiny"

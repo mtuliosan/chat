@@ -11,14 +11,14 @@ import {
 } from '../../../helper/AnalyticsHelper/events';
 import TranslateModal from 'dashboard/components/widgets/conversation/bubble/TranslateModal.vue';
 import MenuItem from '../../../components/widgets/conversation/contextMenu/menuItem.vue';
-import ForwardModal from 'dashboard/components/widgets/conversation/bubble/ForwardModal.vue';
+// import ForwardModal from 'dashboard/components/widgets/conversation/bubble/ForwardModal.vue';
 
 export default {
   components: {
     AddCannedModal,
     TranslateModal,
     MenuItem,
-    ForwardModal,
+    // ForwardModal,
   },
   props: {
     message: {
@@ -49,14 +49,14 @@ export default {
       isCannedResponseModalOpen: false,
       showTranslateModal: false,
       showDeleteModal: false,
-      showForwardModal: false,
+      // showForwardModal: false,
     };
   },
   computed: {
     ...mapGetters({
       getAccount: 'accounts/getAccount',
       currentAccountId: 'getCurrentAccountId',
-      currentChat: 'getSelectedChat',
+      // currentChat: 'getSelectedChat',
     }),
     plainTextContent() {
       return this.getPlainText(this.messageContent);
@@ -107,6 +107,10 @@ export default {
     },
     hideCannedResponseModal() {
       this.isCannedResponseModalOpen = false;
+      this.handleClose();
+    },
+    handleForwardTo() {
+      this.$emit('forwardTo', this.messageId);
       this.handleClose();
     },
     handleOpen(e) {
@@ -161,13 +165,13 @@ export default {
       );
     },
 
-    handleForward() {
-      this.handleClose();
-      this.showForwardModal = true;
-    },
-    onCloseForwardModal() {
-      this.showForwardModal = false;
-    },
+    // handleForward() {
+    //   this.handleClose();
+    //   this.showForwardModal = true;
+    // },
+    // onCloseForwardModal() {
+    //   this.showForwardModal = false;
+    // },
   },
 };
 </script>
@@ -194,11 +198,11 @@ export default {
     />
     <!-- Confirm Deletion -->
     <!-- Forward Content -->
-    <forward-modal
+    <!-- <forward-modal
       v-if="showForwardModal"
       :message="message"
       @close="onCloseForwardModal"
-    />
+    /> -->
     <!-- Confirm Deletion -->
     <woot-delete-modal
       v-if="showDeleteModal"
@@ -235,6 +239,15 @@ export default {
           @click="handleReplyTo"
         />
         <MenuItem
+          v-if="enabledOptions['replyTo']"
+          :option="{
+            icon: 'arrow-redo',
+            label: $t('CONVERSATION.CONTEXT_MENU.FORWARD_TO'),
+          }"
+          variant="icon"
+          @click="handleForwardTo"
+        />
+        <MenuItem
           v-if="enabledOptions['copy']"
           :option="{
             icon: 'clipboard',
@@ -251,14 +264,6 @@ export default {
           }"
           variant="icon"
           @click="handleTranslate"
-        />
-        <menu-item
-          :option="{
-            icon: 'share',
-            label: 'Encaminhar',
-          }"
-          variant="icon"
-          @click="handleForward"
         />
         <hr />
         <MenuItem
@@ -278,7 +283,7 @@ export default {
           variant="icon"
           @click="showCannedResponseModal"
         />
-        <template v-if="canDeleteMessage()">
+        <!-- <template v-if="canDeleteMessage()">
           <hr />
           <menu-item
             :option="{
@@ -288,7 +293,17 @@ export default {
             variant="icon"
             @click="openDeleteModal"
           />
-        </template>
+        </template> -->
+        <hr v-if="enabledOptions['delete']" />
+        <menu-item
+          v-if="enabledOptions['delete']"
+          :option="{
+            icon: 'delete',
+            label: $t('CONVERSATION.CONTEXT_MENU.DELETE'),
+          }"
+          variant="icon"
+          @click="openDeleteModal"
+        />
       </div>
     </woot-context-menu>
   </div>

@@ -172,6 +172,7 @@ export default {
   },
   data() {
     return {
+      searchQuery: '',
       activeAssigneeTab: wootConstants.ASSIGNEE_TYPE.ME,
       activeStatus: wootConstants.STATUS_TYPE.OPEN,
       activeSortBy: wootConstants.SORT_BY_TYPE.LAST_ACTIVITY_AT_DESC,
@@ -206,6 +207,7 @@ export default {
       },
     };
   },
+  
   computed: {
     ...mapGetters({
       currentUser: 'getCurrentUser',
@@ -252,6 +254,9 @@ export default {
         this.currentRole !== 'administrator' &&
         this.isFeatureEnabledonAccount(this.accountId, 'hide_filters_for_agent')
       );
+    },
+    filteredChatsOnView() {
+      return this.chatsOnView;
     },
     hasAppliedFilters() {
       return this.appliedFilters.length !== 0;
@@ -460,6 +465,7 @@ export default {
     },
     chatLists() {
       this.chatsOnView = this.conversationList;
+      this.updateChatsOnView();
     },
     showAssigneeInConversationCard(newVal) {
       this.updateVirtualListProps('showAssignee', newVal);
@@ -491,6 +497,29 @@ export default {
         ...this.virtualListExtraProps,
         [key]: value,
       };
+    },
+    onInputSearch(event) {
+      const newQuery = event.target.value.toLowerCase();
+      this.searchQuery = newQuery;
+      this.updateChatsOnView();
+    },
+    updateChatsOnView() {
+      if (!this.searchQuery) {
+        this.chatsOnView = this.conversationList;
+      } else {
+        this.chatsOnView = this.conversationList.filter(conversation => {
+          const contactName = conversation.meta.sender.name
+            ? conversation.meta.sender.name.toLowerCase()
+            : '';
+          const contactPhone = conversation.meta.sender.phone_number
+            ? conversation.meta.sender.phone_number.toLowerCase()
+            : '';
+          return (
+            contactName.includes(this.searchQuery) ||
+            contactPhone.includes(this.searchQuery)
+          );
+        });
+      }
     },
     onApplyFilter(payload) {
       this.resetBulkActions();
@@ -952,6 +981,8 @@ export default {
       @filtersModal="onToggleAdvanceFiltersModal"
       @resetFilters="resetAndFetchData"
       @basicFilterChange="onBasicFilterChange"
+      @input-search="onInputSearch"
+
     />
 
     <AddCustomViews
@@ -1005,7 +1036,7 @@ export default {
       <VirtualList
         ref="conversationVirtualList"
         data-key="id"
-        :data-sources="conversationList"
+        :data-sources="filteredChatsOnView"
         :data-component="itemComponent"
         :extra-props="virtualListExtraProps"
         class="w-full h-full overflow-auto"

@@ -78,7 +78,7 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
     {
       user_id: Current.user.id,
       account_id: Current.account.id,
-      message_id: message.id,
+      messages: params[:messages],
       contacts: params[:contacts]
     }
   end

@@ -206,6 +206,7 @@
     },
     "CONTEXT_MENU": {
       "COPY": "Copiar",
+      "FORWARD_TO": "Encaminhar mensagem",
       "REPLY_TO": "Responder a esta mensagem",
       "DELETE": "Excluir",
       "CREATE_A_CANNED_RESPONSE": "Adicionar às respostas prontas",
